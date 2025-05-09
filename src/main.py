@@ -1,5 +1,7 @@
 import discord
+from discord import Embed
 from discord.ext import commands
+
 
 from dotenv import load_dotenv
 import os
@@ -26,6 +28,8 @@ async def on_message_edit(before_message, after_message):
     await before_message.channel.send(f"{before_message.author.mention} just edited a message!")
     await before_message.channel.send(f"Before it was edited, the message content was ```{before_message.content}```")
     await before_message.channel.send(f"Now it is ```{after_message.content}```")
+
+    await bot.process_commands(after_message) 
 
 
 @bot.command()
@@ -55,7 +59,32 @@ async def talk(ctx, arg, user_ID, *, msg):
                 await ctx.send("I don't have permission to message this user.")
         else:
             return
+    
+@bot.command()
+async def member(ctx, arg):
+    if arg.lower() == "count":
+        await ctx.send(f"Number of members: {ctx.guild.member_count}")
+
+
+@bot.command()
+async def whoami(ctx, user_id: int = None):
+    if user_id:
+        user_target = await bot.fetch_user(user_id)
+        await ctx.send(f"They are: ```{user_target}```")
+        await ctx.send(f"Their user ID: {user_target.id}")
+        await ctx.send(f"Their account was created on {user_target.created_at.strftime("%B %d, %Y")}")
+        return
+    else:
+        await ctx.send(f"You are: ```{ctx.author}```")
+        await ctx.send(f"Your user ID: {ctx.author.id}")
+        await ctx.send(f"Your account was created on {ctx.author.created_at.strftime("%B %d, %Y")}")
+
+
+    ret_embed = Embed(
+
         
+    )
+
 
 @bot.event
 async def on_command_error(ctx, error):
