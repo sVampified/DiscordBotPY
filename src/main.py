@@ -1,6 +1,7 @@
 import discord
-from discord import Embed
+from discord import Embed, Color
 from discord.ext import commands
+from datetime import datetime
 
 
 from dotenv import load_dotenv
@@ -25,11 +26,15 @@ async def on_message_delete(message):
 
 @bot.event
 async def on_message_edit(before_message, after_message):
+
+    if after_message.author.bot:
+        return
+
+    await bot.process_commands(after_message)
+
     await before_message.channel.send(f"{before_message.author.mention} just edited a message!")
     await before_message.channel.send(f"Before it was edited, the message content was ```{before_message.content}```")
     await before_message.channel.send(f"Now it is ```{after_message.content}```")
-
-    await bot.process_commands(after_message) 
 
 
 @bot.command()
@@ -44,6 +49,7 @@ async def ping(ctx, arg):
 async def academic(ctx, arg):
     if arg.lower() == "calendar":
         await ctx.send("https://seattlecentral.edu/about/calendar/current-academic-calendar")
+
 
 @bot.command()
 async def talk(ctx, arg, user_ID, *, msg):
@@ -60,6 +66,7 @@ async def talk(ctx, arg, user_ID, *, msg):
         else:
             return
     
+
 @bot.command()
 async def member(ctx, arg):
     if arg.lower() == "count":
@@ -68,23 +75,49 @@ async def member(ctx, arg):
 
 @bot.command()
 async def whoami(ctx, user_id: int = None):
+    ret_embed = None
+    in_server = False
+    guild = bot.get_guild(1242670627370962964)
+
+
+    #TODO - FIX THE FEATURE, is specified user a member of the guild or not.
     if user_id:
         user_target = await bot.fetch_user(user_id)
-        await ctx.send(f"They are: ```{user_target}```")
-        await ctx.send(f"Their user ID: {user_target.id}")
-        await ctx.send(f"Their account was created on {user_target.created_at.strftime("%B %d, %Y")}")
+
+        if guild.get_member(user_id) is not None:
+            in_server = True
+
+        ret_embed = Embed(
+            color=0xff5733,
+            title=f"User: {user_target}",
+            description=f"Their user id: {user_target.id}\nTheir join date: {user_target.created_at.strftime('%B %d, %Y')}\nIn server: {'Yes' if in_server else 'No'}",
+            timestamp=datetime.now()
+        )
+
+        ret_embed.set_author(name=ctx.author, url=None, icon_url=ctx.author.avatar.url)
+        ret_embed.set_thumbnail(url=user_target.avatar.url)
+
+        await ctx.send(embed=ret_embed)
+        
         return
     else:
-        await ctx.send(f"You are: ```{ctx.author}```")
-        await ctx.send(f"Your user ID: {ctx.author.id}")
-        await ctx.send(f"Your account was created on {ctx.author.created_at.strftime("%B %d, %Y")}")
+        ret_embed = Embed(
+            color=0xff5733,
+            title=f"User: {ctx.author}",
+            description=f"Your user id: {ctx.author.id}\n Your join date: {ctx.author.created_at.strftime("%B %d, %Y")}",
+            timestamp=datetime.now()
+        )
+
+        ret_embed.set_author(name=ctx.author, url=None, icon_url=ctx.author.avatar.url)
+        ret_embed.set_thumbnail(url=ctx.author.avatar.url)
+
+        await ctx.send(embed=ret_embed)
+        return
 
 
-    ret_embed = Embed(
-
-        
-    )
-
+@bot.command()
+async def commands(ctx):
+    await ctx.send("```\nping\nacademic calendar\ntalk to\nmember count\nwhoami\n```")
 
 @bot.event
 async def on_command_error(ctx, error):
