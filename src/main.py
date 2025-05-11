@@ -27,7 +27,6 @@ async def on_message_delete(message):
 
 @bot.event
 async def on_message_edit(before_message, after_message):
-
     if after_message.author.bot:
         return
 
@@ -86,16 +85,17 @@ async def member(ctx, arg):
 async def whoami(ctx, user_id: int = None):
     ret_embed = None
     in_server = False
-    guild = bot.get_guild(os.getenv("GUILD_ID"))
+    guild = bot.get_guild(int(os.getenv("GUILD_ID")))
+    member = None
 
-
-    #TODO - FIX THE FEATURE, is specified user a member of the guild or not.
     if user_id:
         user_target = await bot.fetch_user(user_id)
-        member = await guild.fetch_member(user_id)
 
-        if member:
+        try:
+            member = await guild.fetch_member(user_id)
             in_server = True
+        except discord.NotFound:
+            in_server = False
 
         ret_embed = Embed(
             color=0xff5733,
@@ -142,8 +142,10 @@ async def creator(ctx):
 
 
 @bot.command()
-async def commands(ctx):
-    await ctx.send("```\nping\nacademic calendar\ntalk to\nmember count\nwhoami\ncreator```")
+async def list(ctx, arg):
+    if arg.lower == "commands":
+        await ctx.send("```\nping\nacademic calendar\ntalk to\nmember count\nwhoami\ncreator```")
+
 
 @bot.event
 async def on_command_error(ctx, error):
