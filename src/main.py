@@ -141,10 +141,35 @@ async def creator(ctx):
     await ctx.send(embed=ret_embed)
 
 
+#TODO - FIX creating voice channels
+@bot.command()
+async def create(ctx, arg, category_name, channel_name):
+    if ctx.author.guild_permissions.manage_channels:
+        category = discord.utils.get(ctx.author.guild.categories, name=category_name)
+
+        if category:
+            if arg.lower() == "channel":
+                await ctx.guild.create_text_channel(channel_name, category=category)
+                await ctx.send(f"The text channel **{channel_name}** has been created in the **{category}** channel")
+            elif arg.lower() == "voicechannel":
+                await ctx.guild.create_voice_channel(channel_name, category=category_name)
+                await ctx.send(f"The voice channel **{channel_name}** has been created in the **{category}** channel")
+        else:
+            if arg.lower() == "channel":
+                await ctx.guild.create_text_channel(channel_name)
+                await ctx.send(f"Could not find category **{category_name}**. Created text channel **{channel_name}** without a category")
+            elif arg.lower() == "voicechannel":
+                await ctx.guild.create_voice_channel(channel_name)
+                await ctx.send(f"Could not find category **{category_name}**. Created voice channel **{channel_name}** without a category")
+    else:
+        await ctx.send("You don't have permissions")
+
+
 @bot.command()
 async def list(ctx, arg):
-    if arg.lower == "commands":
-        await ctx.send("```\nping\nacademic calendar\ntalk to\nmember count\nwhoami\ncreator```")
+    if arg.lower() == "commands":
+        await ctx.send("```\nlist commands\nping\nacademic calendar\ntalk to\nmember count\nwhoami\ncreator\ncreate channel```")
+
 
 
 @bot.event
