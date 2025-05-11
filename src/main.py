@@ -1,6 +1,7 @@
 import discord
 from discord import Embed, Color
 from discord.ext import commands
+from discord.ext.commands import CommandNotFound
 from datetime import datetime
 
 
@@ -38,17 +39,25 @@ async def on_message_edit(before_message, after_message):
 
 
 @bot.command()
-async def ping(ctx, arg):
-    if arg.isdigit():
-        await ctx.send(f"<@{arg}>")
-    else:
-        await ctx.send("Please provide a correct USER ID")
+async def ping(ctx, arg=None):
+    if not arg:
+        await ctx.send("Please provide a USER ID")
+        return
+    elif not arg.isdigit():
+        await ctx.send("Please provide a proper USER ID")
+        return
+    await ctx.send(f"<@{arg}>")
+
 
 
 @bot.command()
-async def academic(ctx, arg):
+async def academic(ctx, arg=None):
+    if not arg:
+        await ctx.send("Did you mean **academic calendar**?")
     if arg.lower() == "calendar":
         await ctx.send("https://seattlecentral.edu/about/calendar/current-academic-calendar")
+    else:
+        await ctx.send("Did you mean **academic calendar**?")
 
 
 @bot.command()
@@ -77,14 +86,15 @@ async def member(ctx, arg):
 async def whoami(ctx, user_id: int = None):
     ret_embed = None
     in_server = False
-    guild = bot.get_guild(1242670627370962964)
+    guild = bot.get_guild(os.getenv("GUILD_ID"))
 
 
     #TODO - FIX THE FEATURE, is specified user a member of the guild or not.
     if user_id:
         user_target = await bot.fetch_user(user_id)
+        member = await guild.fetch_member(user_id)
 
-        if guild.get_member(user_id) is not None:
+        if member:
             in_server = True
 
         ret_embed = Embed(
@@ -114,10 +124,26 @@ async def whoami(ctx, user_id: int = None):
         await ctx.send(embed=ret_embed)
         return
 
+@bot.command()
+async def creator(ctx):
+    creator_user = await bot.fetch_user(os.getenv("CREATOR_ID"))
+
+    ret_embed = Embed(
+        color=0x8c0ce4,
+        title=f"Creater of bot: {creator_user}",
+        description=f"Their user id: {creator_user.id}\n Their join date: {creator_user.created_at.strftime('%B %d, %Y')}",
+        timestamp=datetime.now()
+    )
+
+    ret_embed.set_author(name=ctx.author, url=None, icon_url=ctx.author.avatar.url)
+    ret_embed.set_thumbnail(url=ctx.author.avatar.url)
+
+    await ctx.send(embed=ret_embed)
+
 
 @bot.command()
 async def commands(ctx):
-    await ctx.send("```\nping\nacademic calendar\ntalk to\nmember count\nwhoami\n```")
+    await ctx.send("```\nping\nacademic calendar\ntalk to\nmember count\nwhoami\ncreator```")
 
 @bot.event
 async def on_command_error(ctx, error):
