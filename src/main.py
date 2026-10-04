@@ -3,8 +3,6 @@ from discord import Embed, Color, app_commands
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
 from datetime import datetime
-
-
 from dotenv import load_dotenv
 import os
 
@@ -16,26 +14,24 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="", intents=intents)
 deleted_messages = []
 
-
 @bot.event
 async def on_ready():
     print(f'We have logged in as {bot.user}')
 
     try:
-        synced = await bot.tree.sync(guild=discord.Object(1242670627370962964))
+        synced = await bot.tree.sync(guild=discord.Object(os.getenv("GUILD_ID")))
         print(f"Synced {len(synced)} commands")
     except Exception as e: 
         print(f"Error syncing commands: {e}")
 
-@bot.tree.command(name="ping", description="Pong!", guild=discord.Object(1242670627370962964))
+@bot.tree.command(name="ping", description="Pong!", guild=discord.Object(os.getenv("GUILD_ID")))
 async def replyPing(interaction:discord.Interaction):
     await interaction.response.send_message("Pong!")
 
 @bot.tree.command(name="academic-calendar", description="Sends a link to the Seattle Central academic calendar",
-                  guild=discord.Object(1242670627370962964))
+                  guild=discord.Object(os.getenv("GUILD_ID")))
 async def replyAcademicCalendar(interaction:discord.Interaction):
     await interaction.response.send_message("https://seattlecentral.edu/about/calendar/current-academic-calendar")
-
 
 
 #TODO -  use a dictionary instead of a list for deleted messages as you want
@@ -200,9 +196,6 @@ async def snipe(ctx):
 async def list(ctx, arg):
     if arg.lower() == "commands":
         await ctx.send("```\nlist commands\nping\nacademic calendar\ntalk to\nmember count\nwhoami\ncreator\ncreate voicechannel/channel```")
-
-
-
 
 
 @bot.event
